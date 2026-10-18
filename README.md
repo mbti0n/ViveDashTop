@@ -40,15 +40,19 @@ The biggest challenge for *ViveDashTop* was the technical limitations of my mini
 brew install wtfutil
 ```
 
-2. Install gcalcli using Homebrew (macOS/Linux)
+2. Copy `config/.env.example` to `config/.env`. Once per project, create an Auth0 Regular Web Application and a Google connection, then put the domain, client id, and client secret in that file.
+   - Callback URL: `http://127.0.0.1:8765/callback`
+   - Turn on offline access, and turn off refresh token rotation.
+   - Enable Connected Accounts for Token Vault on the Google connection.
+   - Request `https://www.googleapis.com/auth/calendar.events.readonly`.
+   - In Google Cloud, keep the consent screen in testing and add the Gmail addresses that will sign in.
+
+3. Start the dashboard from the repo:
 ```bash
-brew install gcalcli
+./config/dashboard.sh
 ```
+The terminal dashboard opens, then a browser window asks you to sign in with Google. Today's calendar shows up after you approve it. The time-of-day photos already live in `Pictures/`.
 
-3. Run `gcalcli init` to setup the Google Calendar API. Access the Google Calendar API from Google Cloud console.
+Gemini and Last.fm stay optional. Add `GEMINI_API_KEY`, `LASTFM_API_KEY`, and `LASTFM_USERNAME` to `config/.env` when you want those filled in.
 
-4. Copy all files inside the `config` folder into `~/.config/wtf/`. Remember to rename the `.env.example` file to `.env` then specify Gemini API Key, Last.fm API key, and Last.fm account name.
-   
-5. Copy all images inside the `Pictures` folder into `~/Pictures`
-
-6. Install the requiring libraries for all Python files in the project, especially OpenCV.
+4. For the palm-photo window, install its libraries into `palm-photo/.venv` from `palm-photo/requirements.txt`.

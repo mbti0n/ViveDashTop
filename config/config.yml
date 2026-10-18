@@ -16,7 +16,7 @@ wtf:
     weather_calendar:
       enabled: true
       type: "cmdrunner"
-      cmd: "~/.config/wtf/weather_calendar.py"
+      cmd: "config/run-widget.sh weather_calendar.py"
       refreshInterval: 1s
       title: ""
       position:
@@ -27,7 +27,7 @@ wtf:
     info:
       enabled: true
       type: "cmdrunner"
-      cmd: "~/.config/wtf/info.py"
+      cmd: "config/run-widget.sh info.py"
       refreshInterval: 1s
       title: ""
       position:
@@ -38,7 +38,7 @@ wtf:
     sports:
       enabled: true
       type: "cmdrunner"
-      cmd: "~/.config/wtf/sports.py"
+      cmd: "config/run-widget.sh sports.py"
       refreshInterval: 1s
       title: ""
       position:
@@ -49,7 +49,7 @@ wtf:
     lastfm:
       enabled: true
       type: "cmdrunner"
-      cmd: "~/.config/wtf/lastfm.py"
+      cmd: "config/run-widget.sh lastfm.py"
       refreshInterval: 3s
       title: ""
       position:
