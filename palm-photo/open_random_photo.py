@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Open the time-appropriate image from ~/Pictures with pinch gestures."""
+"""Open the time-appropriate image from the repo Pictures folder with pinch gestures."""
 
 from __future__ import annotations
 
@@ -19,7 +19,6 @@ import cv2
 import mediapipe as mp
 
 
-PICTURES = Path.home() / "Pictures"
 MODEL = Path(__file__).resolve().parent / "models" / "hand_landmarker.task"
 IMAGE_EXTENSIONS = {".jpg", ".jpeg", ".png", ".gif", ".bmp", ".webp", ".tif", ".tiff"}
 CAMERA_WINDOW = "Palm photo camera"
@@ -31,8 +30,18 @@ solar_times_cache: tuple[daytime, daytime] | None = None
 stop_solar_refresh = threading.Event()
 
 
+def pictures_dir() -> Path:
+    override = os.environ.get("VIVEDASH_PICTURES")
+    if override:
+        return Path(override)
+    return Path(__file__).resolve().parent.parent / "Pictures"
+
+
 def image_files() -> list[Path]:
-    return [p for p in PICTURES.iterdir() if p.is_file() and p.suffix.lower() in IMAGE_EXTENSIONS]
+    folder = pictures_dir()
+    if not folder.is_dir():
+        return []
+    return [p for p in folder.iterdir() if p.is_file() and p.suffix.lower() in IMAGE_EXTENSIONS]
 
 
 def fetch_solar_times() -> tuple[daytime, daytime]:
@@ -160,8 +169,8 @@ def main(headless: bool = False, owner_pid: int | None = None) -> None:
             name="wtfutil-owner",
             daemon=True,
         ).start()
-    if not PICTURES.is_dir() or not image_files():
-        raise SystemExit(f"No supported photos found in {PICTURES}")
+    if not pictures_dir().is_dir() or not image_files():
+        raise SystemExit(f"No supported photos found in {pictures_dir()}")
     if shutil.which("feh") is None:
         raise SystemExit("feh is required to show photos fullscreen. Install it with `sudo apt install feh`.")
 
@@ -267,7 +276,7 @@ def main(headless: bool = False, owner_pid: int | None = None) -> None:
                                 period = time_period(datetime.now().astimezone().time(), sunrise, sunset)
                                 photo = image_for_period(period)
                                 if photo is None:
-                                    status = f"No image named {period} found in {PICTURES}"
+                                    status = f"No image named {period} found in {pictures_dir()}"
                                 else:
                                     photo_process = subprocess.Popen(
                                         ["feh", "--fullscreen", "--auto-zoom", str(photo)],
