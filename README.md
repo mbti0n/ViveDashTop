@@ -3,7 +3,7 @@
   <img style="width: 10%" src="https://xii.swamphacks.com/assets/shxii-icon-transparent-C4fGRz1F.png">
   <h1>ViveDashTop</h2>
   <em>A SwampHacks XII project</em>
-  <h4>Old slow laptop, new modern dashboard | Linux<h4>
+  <h4>Old slow laptop, new modern dashboard | macOS/Linux<h4>
 
   <a href="#"><img alt="🌐 Demo" src="https://img.shields.io/badge/%F0%9F%8C%90%20Demo-f59e0b?style=for-the-badge" /></a>
 </div>
