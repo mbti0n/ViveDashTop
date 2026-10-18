@@ -3,7 +3,7 @@
   <img style="width: 10%" src="https://xii.swamphacks.com/assets/shxii-icon-transparent-C4fGRz1F.png">
   <h1>ViveDashTop</h2>
   <em>A SwampHacks XII project</em>
-  <h4>Old slow laptop, new modern dashboard<h4>
+  <h4>Old slow laptop, new modern dashboard | Linux<h4>
 
   <a href="#"><img alt="🌐 Demo" src="https://img.shields.io/badge/%F0%9F%8C%90%20Demo-f59e0b?style=for-the-badge" /></a>
 </div>
@@ -17,5 +17,10 @@
 ## How It Was Built?
 
 ## How to Use
-Install
+1. Install wtfutil using Homebrew (macOS/Linux)
+```bash
+brew install wtfutil
+```
 
+2. Copy all files inside the `config` folder into `~/.config/wtf/`. Remember to rename the `.env.example` file to `.env` then specify Gemini API Key, Last.fm API key, and Last.fm account name.
+3. Copy all images inside the `Pictures` folder into `~/Pictures`
