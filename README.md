@@ -22,5 +22,12 @@
 brew install wtfutil
 ```
 
-2. Copy all files inside the `config` folder into `~/.config/wtf/`. Remember to rename the `.env.example` file to `.env` then specify Gemini API Key, Last.fm API key, and Last.fm account name.
-3. Copy all images inside the `Pictures` folder into `~/Pictures`
+2. Install gcalcli using Homebrew (macOS/Linux)
+```bash
+brew install gcalcli
+```
+
+3. Run `gcalcli init` to setup the Google Calendar API. Access the Google Calendar API from Google Cloud console.
+
+4. Copy all files inside the `config` folder into `~/.config/wtf/`. Remember to rename the `.env.example` file to `.env` then specify Gemini API Key, Last.fm API key, and Last.fm account name.
+5. Copy all images inside the `Pictures` folder into `~/Pictures`
