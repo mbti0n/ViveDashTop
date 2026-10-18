@@ -5,7 +5,7 @@
   <em>A SwampHacks XII project</em>
   <h4>Old slow laptop, new modern dashboard, build for macOS/Linux<h4>
 
-  <a href="#"><img alt="🌐 Demo" src="https://img.shields.io/badge/%F0%9F%8C%90%20Demo-f59e0b?style=for-the-badge" /></a>
+  <a href="https://devpost.com/software/vivedashtop"><img alt="🌐 Demo" src="https://img.shields.io/badge/%F0%9F%8C%90%20DevPost-f59e0b?style=for-the-badge" /></a>
 </div>
 
 ## The Journey, and The "Why"
