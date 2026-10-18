@@ -1,18 +1,29 @@
 #!/bin/sh
 set -u
 
-APP_DIR="$HOME/palm-photo"
+ROOT=$(CDPATH= cd -- "$(dirname "$0")/.." && pwd)
+APP_DIR="$ROOT/palm-photo"
 STATE_DIR="$HOME/.local/state/palm-photo"
 PID_FILE="$STATE_DIR/gesture.pid"
 LOG_FILE="$STATE_DIR/gesture.log"
+export VIVEDASH_PICTURES="${VIVEDASH_PICTURES:-$ROOT/Pictures}"
+
+if [ -x "$APP_DIR/.venv/bin/python" ]; then
+    PYTHON="$APP_DIR/.venv/bin/python"
+else
+    PYTHON=$(command -v python3 || true)
+fi
 
 service_pid() {
     [ -r "$PID_FILE" ] || return 1
     pid=$(cat "$PID_FILE")
     case "$pid" in ''|*[!0-9]*) return 1 ;; esac
     kill -0 "$pid" 2>/dev/null || return 1
-    [ -r "/proc/$pid/cmdline" ] || return 1
-    tr '\000' ' ' < "/proc/$pid/cmdline" | grep -F "$APP_DIR/open_random_photo.py" >/dev/null || return 1
+    if [ -r "/proc/$pid/cmdline" ]; then
+        tr '\000' ' ' < "/proc/$pid/cmdline" | grep -F "open_random_photo.py" >/dev/null || return 1
+    elif ! ps -p "$pid" -o command= | grep -F "open_random_photo.py" >/dev/null; then
+        return 1
+    fi
     printf '%s\n' "$pid"
 }
 
@@ -21,13 +32,15 @@ case "${1:-ensure}" in
         mkdir -p "$STATE_DIR"
         if pid=$(service_pid); then
             printf 'Palm photo gesture service running (PID %s)\n' "$pid"
+        elif [ -z "$PYTHON" ] || ! "$PYTHON" -c "import cv2, mediapipe" >/dev/null 2>&1; then
+            printf 'Palm photo skipped. From palm-photo: python3 -m venv .venv && .venv/bin/pip install -r requirements.txt\n'
         else
             owner_pid=${2:-$(pgrep -xo wtfutil 2>/dev/null || true)}
             if [ -n "$owner_pid" ]; then
-                nohup "$APP_DIR/.venv/bin/python" "$APP_DIR/open_random_photo.py" \
+                nohup "$PYTHON" "$APP_DIR/open_random_photo.py" \
                     --owner-pid "$owner_pid" </dev/null >>"$LOG_FILE" 2>&1 &
             else
-                nohup "$APP_DIR/.venv/bin/python" "$APP_DIR/open_random_photo.py" \
+                nohup "$PYTHON" "$APP_DIR/open_random_photo.py" \
                     </dev/null >>"$LOG_FILE" 2>&1 &
             fi
             pid=$!
