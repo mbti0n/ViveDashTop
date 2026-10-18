@@ -14,6 +14,11 @@ import urllib.parse
 import urllib.request
 from zoneinfo import ZoneInfo
 
+sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
+import google_auth
+
+google_auth.load_env_file()
+
 CITY = "Orlando"
 TZ = ZoneInfo("America/New_York")
 UA = "curl/8.0"
@@ -36,14 +41,13 @@ NWS_ALERTS = "https://api.weather.gov/alerts/active?point=28.5383,-81.3792"
 NWS_UA = "wtf-personal-dashboard (https://github.com/wtfutil/wtf)"
 GEMINI_MODEL = os.environ.get("GEMINI_MODEL", "gemini-3.8-flash")
 BRIEFING_ICONS = {"weather": "\uf185", "music": "\uf001"}
-SPORTS_ICONS = {"NFL": "", "NHL": "󰡺", "MLB": "", "NBA": ""}
+SPORTS_ICONS = {"NFL": "\ued69", "NHL": "\U000f087a", "MLB": "\ued5c", "NBA": "\ued5d"}
 GAS_CACHE = pathlib.Path.home() / ".cache" / "wtf-gas.txt"
 GAS_MAX_AGE = 60 * 60
 GAS_URL = "https://jacobschulman.github.io/gas-tracker/api/v1/latest.json"
 # Round to whole cents: 4.1903 -> 4.19.
 GAS_FILTER = '"Regular: $" + (.states.FL.regular * 100 | round / 100 | tostring) + "/gal"'
 
-GCALCLI = shutil.which("gcalcli") or "/home/linuxbrew/.linuxbrew/bin/gcalcli"
 CURL = shutil.which("curl") or "/usr/bin/curl"
 JQ = shutil.which("jq") or "/usr/bin/jq"
 
@@ -152,19 +156,14 @@ def gas():
 
 
 def agenda_tsv():
-    """Today's and tomorrow's gcalcli agenda as TSV, cached briefly."""
+    """Today's and tomorrow's Google Calendar agenda as TSV, cached briefly."""
     if AGENDA_CACHE.exists() and time.time() - AGENDA_CACHE.stat().st_mtime < AGENDA_MAX_AGE:
         return AGENDA_CACHE.read_text()
 
-    proc = subprocess.run(
-        [GCALCLI, "agenda", "--tsv", "today", "tomorrow"],
-        capture_output=True,
-        text=True,
-        timeout=30,
-    )
+    text = google_auth.fetch_agenda_tsv(dt.datetime.now(TZ))
     AGENDA_CACHE.parent.mkdir(parents=True, exist_ok=True)
-    AGENDA_CACHE.write_text(proc.stdout)
-    return proc.stdout
+    AGENDA_CACHE.write_text(text)
+    return text
 
 
 def fmt_12h(hhmm):
@@ -176,8 +175,8 @@ def agenda(now):
     """The next few upcoming events for today and tomorrow.
 
     All-day events and events that have already finished are dropped; events in
-    progress are kept. Each event renders as two "│"-prefixed lines — the
-    title, then "start time - end time" — with a blank line between events.
+    progress are kept. Each event renders as two "\u2502"-prefixed lines \u2014 the
+    title, then "start time - end time" \u2014 with a blank line between events.
     """
     rows = []
     for line in agenda_tsv().splitlines():
@@ -198,8 +197,8 @@ def agenda(now):
 
     blocks = []
     for start, end, title in rows:
-        title_lines = wrap_cells(title, INFO_WIDTH, first_prefix="│", continuation_prefix="│")
-        title_lines.append(f"│{fmt_12h(start.strftime('%H:%M'))} - {fmt_12h(end.strftime('%H:%M'))}")
+        title_lines = wrap_cells(title, INFO_WIDTH, first_prefix="\u2502", continuation_prefix="\u2502")
+        title_lines.append(f"\u2502{fmt_12h(start.strftime('%H:%M'))} - {fmt_12h(end.strftime('%H:%M'))}")
         blocks.append("\n".join(title_lines))
     return "\n\n".join(blocks)
 
@@ -250,7 +249,7 @@ def truncate_cells(text, width):
             continue
         char_width = 2 if unicodedata.east_asian_width(char) in ("W", "F") else 1
         if used + char_width > width:
-            return output.rstrip() + "…"
+            return output.rstrip() + "\u2026"
         output += char
         used += char_width
     return output
@@ -337,7 +336,7 @@ def sports_context():
             favorite = away in favorites or home in favorites
             state = game.get("state")
             if state == "in":
-                text = f"Live: {away} {game.get('away_score', 0)}–{game.get('home_score', 0)} {home} ({game.get('detail', '')})"
+                text = f"Live: {away} {game.get('away_score', 0)}\u2013{game.get('home_score', 0)} {home} ({game.get('detail', '')})"
                 rank = 0
             elif state == "pre":
                 start = game.get("start", "")
@@ -348,7 +347,7 @@ def sports_context():
                 text = f"{away} vs {home} at {when}"
                 rank = 1
             elif state == "post":
-                text = f"Final: {away} {game.get('away_score', 0)}–{game.get('home_score', 0)} {home}"
+                text = f"Final: {away} {game.get('away_score', 0)}\u2013{game.get('home_score', 0)} {home}"
                 rank = 2
             else:
                 continue
@@ -386,7 +385,7 @@ def music_context():
         if not counts:
             return []
         (title, artist), plays = max(counts.items(), key=lambda item: item[1])
-        return [{"source": "music", "text": f"Most played today: {title} — {artist} ({plays} plays)"}]
+        return [{"source": "music", "text": f"Most played today: {title} \u2014 {artist} ({plays} plays)"}]
     except Exception:  # noqa: BLE001
         return []
 
@@ -546,7 +545,7 @@ def briefing_lines():
                 lines.extend(wrapped)
         if lines:
             return lines
-    return [truncate_cells(cached.get("message") or "\uf110 Building briefing…", INFO_WIDTH)]
+    return [truncate_cells(cached.get("message") or "\uf110 Building briefing\u2026", INFO_WIDTH)]
 
 
 def main():
@@ -566,6 +565,8 @@ def main():
         events = agenda(now)
         if events:
             out.extend(events.splitlines())
+    except (google_auth.SignInRequired, google_auth.AuthNotConfigured) as exc:
+        out.extend(truncate_cells(line, INFO_WIDTH) for line in str(exc).splitlines())
     except Exception as exc:  # noqa: BLE001
         out.append(truncate_cells(f"Agenda unavailable: {exc}", INFO_WIDTH))
     if out:
