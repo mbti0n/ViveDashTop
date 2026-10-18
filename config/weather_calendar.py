@@ -6,9 +6,12 @@ import json
 import os
 import pathlib
 import re
+import sys
 import time
 import unicodedata
 import urllib.request
+
+sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
 from info import clock_lines
 
 
