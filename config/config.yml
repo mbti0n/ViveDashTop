@@ -1,0 +1,59 @@
+wtf:
+  colors:
+    border:
+      focusable: white
+      focused: orange
+      normal: gray
+  grid:
+    columns: [32, 32]
+    rows: [5, 8, 12, 2]
+  navigation:
+    # Don't draw the 1/2/3 focus-shortcut labels on the module borders.
+    # Tab/Shift-Tab still move focus between modules.
+    shortcuts: false
+  refreshInterval: 1
+  mods:
+    weather_calendar:
+      enabled: true
+      type: "cmdrunner"
+      cmd: "~/.config/wtf/weather_calendar.py"
+      refreshInterval: 1s
+      title: ""
+      position:
+        top: 0
+        left: 0
+        height: 1
+        width: 2
+    info:
+      enabled: true
+      type: "cmdrunner"
+      cmd: "~/.config/wtf/info.py"
+      refreshInterval: 1s
+      title: ""
+      position:
+        top: 1
+        left: 0
+        height: 2
+        width: 1
+    sports:
+      enabled: true
+      type: "cmdrunner"
+      cmd: "~/.config/wtf/sports.py"
+      refreshInterval: 1s
+      title: ""
+      position:
+        top: 1
+        left: 1
+        height: 1
+        width: 1
+    lastfm:
+      enabled: true
+      type: "cmdrunner"
+      cmd: "~/.config/wtf/lastfm.py"
+      refreshInterval: 3s
+      title: ""
+      position:
+        top: 2
+        left: 1
+        height: 1
+        width: 1
