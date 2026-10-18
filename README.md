@@ -16,4 +16,6 @@
 
 ## How It Was Built?
 
+## How to Use
+Install
 
